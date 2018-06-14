@@ -10,7 +10,7 @@ import sys
 def printUsage():
    print("Usage: python camera.py [depth|segmentation|scene]")
 
-cameraType = "depth"
+cameraType = "scene"
 
 for arg in sys.argv[1:]:
   cameraType = arg.lower()
@@ -50,6 +50,7 @@ fps = 0
 
 while True:
     # because this method returns std::vector<uint8>, msgpack decides to encode it as a string unfortunately.
+    cameraType = 'scene'
     rawImage = client.simGetImage(0, cameraTypeMap[cameraType])
     if (rawImage == None):
         print("Camera is not returning image, please check airsim for error messages")
@@ -57,12 +58,24 @@ while True:
     else:
         png = cv2.imdecode(AirSimClientBase.stringToUint8Array(rawImage), cv2.IMREAD_UNCHANGED)
         cv2.putText(png,'FPS ' + str(fps),textOrg, fontFace, fontScale,(255,0,255),thickness)
-        cv2.imshow("Depth", png)
+        cv2.imshow(cameraType, png)
+
+    cameraType = 'depth'
+    rawImage = client.simGetImage(0, cameraTypeMap[cameraType])
+    if (rawImage == None):
+        print("Camera is not returning image, please check airsim for error messages")
+        sys.exit(0)
+    else:
+        png = cv2.imdecode(AirSimClientBase.stringToUint8Array(rawImage), cv2.IMREAD_UNCHANGED)
+        cv2.putText(png,'FPS ' + str(fps),textOrg, fontFace, fontScale,(255,0,255),thickness)
+        cv2.imshow(cameraType, png)
 
     frameCount  = frameCount  + 1
     endTime=time.clock()
     diff = endTime - startTime
     if (diff > 1):
+        print(png.dtype)
+        print(png.shape)
         fps = frameCount
         frameCount = 0
         startTime = endTime
